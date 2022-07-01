@@ -30,7 +30,7 @@ class sb3DungeonEnv(gym.Env):
             self.dungeon.update()
         self.reward += self.dungeon.get_reward()
 
-        return self.dungeon.get_state(), self.reward, self.dungoen.done, {}
+        return self.dungeon.get_state(gym_return=True), self.reward, self.dungeon.done, {}
 
     def reset(self):
         agent = Agent.Agent()

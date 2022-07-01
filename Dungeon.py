@@ -107,7 +107,7 @@ class Dungeon:
                         self.dungeon_done = True
                         return "lose"
 
-    def create_numbered_grid(self):
+    def create_numbered_grid(self, gym_return=False):
         return_grid = np.empty(
             (Constants.CELL_WIDTH, Constants.CELL_HEIGHT),
             dtype=np.uint32,
@@ -120,11 +120,11 @@ class Dungeon:
                     return_grid[i][j] = 1
                 elif self.cells[i][j].terrain == "exit":
                     return_grid[i][j] = 2
-
-                if self.cells[i][j].creature == self.agent:
-                    return_grid[i][j] = 3
-                elif self.cells[i][j].creature != None:
-                    return_grid[i][j] = 4
+                if gym_return:
+                    if self.cells[i][j].creature == self.agent:
+                        return_grid[i][j] = 3
+                    elif self.cells[i][j].creature == None:
+                        return_grid[i][j] = 4
 
         return return_grid
 

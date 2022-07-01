@@ -3,7 +3,7 @@ import numpy as np
 import time
 import sys
 
-#np.set_printoptions(threshold=sys.maxsize)
+# np.set_printoptions(threshold=sys.maxsize)
 
 env = sb3DungeonEnv()
 episodes = 50
@@ -15,7 +15,7 @@ for episode in range(episodes):
     observation = env.reset()
     done = False
     while not done:
-        time.sleep(.05)
+        time.sleep(0.05)
         action = env.action_space.sample()
         env.render()
         observation, reward, done, info = env.step(action)
@@ -24,7 +24,3 @@ for episode in range(episodes):
         print(done)
         print(info)
         print("\n")
-
-
-
-
