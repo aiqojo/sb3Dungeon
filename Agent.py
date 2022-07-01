@@ -52,8 +52,6 @@ class Agent:
     def move(self, direction):
         self.previous_x = self.x
         self.previous_y = self.y
-        dungeon_width = Constants.WINDOW_WIDTH // Constants.CELL_SIZE
-        dungeon_height = Constants.WINDOW_HEIGHT // Constants.CELL_SIZE
 
         # Keep agent in bounds
         # Up
@@ -66,11 +64,11 @@ class Agent:
                 self.x -= 1
         # Down
         elif direction == 2:
-            if self.y + 1 < dungeon_height:
+            if self.y + 1 < Constants.CELL_HEIGHT:
                 self.y += 1
         # Right
         elif direction == 3:
-            if self.x + 1 < dungeon_width:
+            if self.x + 1 < Constants.CELL_WIDTH:
                 self.x += 1
 
         return (self.x, self.y)

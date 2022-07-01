@@ -4,18 +4,16 @@ import Constants
 import Cell
 import pygame
 import random
+import Goblin
 
 
 class Dungeon:
     def __init__(self, agent):
-
+        self.done = False
         self.agent = agent
         # Create the np array used for the cells of the dungeon
         self.cells = np.empty(
-            (
-                Constants.WINDOW_WIDTH // Constants.CELL_SIZE,
-                Constants.WINDOW_HEIGHT // Constants.CELL_SIZE,
-            ),
+            (Constants.CELL_WIDTH, Constants.CELL_HEIGHT),
             dtype=Cell.Cell,
         )
         # Initialize pygame to actually use it
@@ -25,56 +23,130 @@ class Dungeon:
             (Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT)
         )
         self.create_window()
+        self.exit_coords = (0, 0)
 
         # Get cell count
-        self.cell_count = (
-            Constants.WINDOW_WIDTH
-            // Constants.CELL_SIZE
-            * Constants.WINDOW_HEIGHT
-            // Constants.CELL_SIZE
-        )
+        self.cell_count = Constants.CELL_WIDTH * Constants.CELL_HEIGHT
 
         # Find empty spawn cells, spawn the agent and create the exit
         self.empty_spawn_cells = self.get_empty_spawn_cells()
         self.agent_spawn = random.choice(self.empty_spawn_cells)
-        self.create_exit()
+        self.goblins = []
+
+    def get_state(self):
+        return self.create_numbered_grid()
+
+    def get_reward(self):
+        # If the agent is at the exit it gets 100 points
+        if self.cells[self.agent.x][self.agent.y].terrain == "exit":
+            return 100
+        elif self.agent.alive == False:
+            return -100
+        else:
+            return 25 * (
+                1
+                / (
+                    self.agent.x
+                    + self.exit_coords[0]
+                    + self.agent.y
+                    + self.exit_coords[1]
+                )
+            )
+
+    def build_goblins(self):
+        for i in range(Constants.GOBLIN_COUNT):
+            while True:
+                cell = np.random.choice(self.cells.flatten())
+                if (
+                    cell.terrain == "empty"
+                    and cell.creature is None
+                    and cell.brownian_path is True
+                ):
+                    self.goblins.append(Goblin.Goblin(cell.x, cell.y))
+                    self.cells[cell.x][cell.y].creature = self.goblins[i]
+                    print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
+                    self.cells[cell.x][cell.y].draw()
+                    if (cell.x, cell.y) != self.put_in_bounds(cell.x, cell.y):
+                        print("Goblin spawned out of bounds")
+                        self.goblins.pop()
+                    else:
+                        break
+
+    def update(self):
+        for goblin in self.goblins:
+            # Only moves goblin if the agent is not in the safe zone or exit zone
+            if (self.agent is not None) and (
+                self.agent.x > int(len(self.cells) * Constants.SAFE_ZONE_RATIO)
+                and self.agent.x < int(len(self.cells) * Constants.END_ZONE_RATIO)
+            ):
+                goblin.move(
+                    self.cells, self.create_numbered_grid(), self.agent.x, self.agent.y
+                )
+
+                if self.is_collision(goblin):
+                    goblin.revert_move()
+                else:
+                    if goblin.previous_x != goblin.x or goblin.previous_y != goblin.y:
+                        print(
+                            "Goblin moved",
+                            goblin.x,
+                            goblin.y,
+                            "from",
+                            goblin.previous_x,
+                            goblin.previous_y,
+                        )
+                        self.cells[goblin.previous_x][goblin.previous_y].creature = None
+                        self.cells[goblin.x][goblin.y].creature = goblin
+                        self.cells[goblin.previous_x][goblin.previous_y].draw()
+                        self.cells[goblin.x][goblin.y].draw()
+                        self.draw_grid()
+
+                    if goblin.x == self.agent.x and goblin.y == self.agent.y:
+                        print("Goblin killed the agent")
+                        self.agent.alive = False
+                        self.dungeon_done = True
+                        return "lose"
+
+    def create_numbered_grid(self):
+        return_grid = np.empty(
+            (Constants.CELL_WIDTH, Constants.CELL_HEIGHT),
+            dtype=np.uint32,
+        )
+        for i in range(Constants.CELL_WIDTH):
+            for j in range(Constants.CELL_HEIGHT):
+                if self.cells[i][j].terrain == "empty":
+                    return_grid[i][j] = 0
+                elif self.cells[i][j].terrain == "rock":
+                    return_grid[i][j] = 1
+                elif self.cells[i][j].terrain == "exit":
+                    return_grid[i][j] = 2
+
+                if self.cells[i][j].creature == self.agent:
+                    return_grid[i][j] = 3
+                elif self.cells[i][j].creature != None:
+                    return_grid[i][j] = 4
+
+        return return_grid
+
+    def move_goblins(self):
+        dungeon_cells = self.create_numbered_grid()
+        for goblin in self.goblins:
+            goblin.move(self.cells, dungeon_cells, self.agent.x, self.agent.y)
+            goblin.x, goblin.y = self.put_in_bounds(goblin.x, goblin.y)
+            if self.is_collision(goblin):
+                goblin.revert_move()
+            self.cells[goblin.previous_x][goblin.previous_y].creature = None
+            self.cells[goblin.x][goblin.y].creature = goblin
+            self.cells[goblin.previous_x][goblin.previous_y].draw()
+            self.cells[goblin.x][goblin.y].draw()
+            self.draw_grid()
 
     def create_window(self):
         for i in range(Constants.WINDOW_WIDTH // Constants.CELL_SIZE):
             for j in range(Constants.WINDOW_HEIGHT // Constants.CELL_SIZE):
-                self.cells[i][j] = Cell.Cell(i, j)
-                self.cells[i][j].draw(self.screen)
+                self.cells[i][j] = Cell.Cell(i, j, screen=self.screen)
+                self.cells[i][j].draw()
         self.draw_grid()
-
-    def draw_grid(self):
-        return
-        safe_zone = False
-        exit_zone = False
-        for i in range(0, Constants.WINDOW_WIDTH, Constants.CELL_SIZE):
-            # Drawing a blue line for the safe zone to show how far it goes out
-            if safe_zone == False and i // Constants.CELL_SIZE >= int(
-                len(self.cells) * Constants.SAFE_ZONE_RATIO
-            ):
-                safe_zone = True
-                pygame.draw.line(
-                    self.screen, Constants.BLUE, (i, 0), (i, Constants.WINDOW_HEIGHT)
-                )
-            # Drawing a red line for the exit zone to show how far it goes out
-            elif exit_zone == False and i // Constants.CELL_SIZE >= int(
-                len(self.cells) * Constants.END_ZONE_RATIO
-            ):
-                exit_zone = True
-                pygame.draw.line(
-                    self.screen, Constants.RED, (i, 0), (i, Constants.WINDOW_HEIGHT)
-                )
-            else:
-                pygame.draw.line(
-                    self.screen, Constants.BLACK, (i, 0), (i, Constants.WINDOW_HEIGHT)
-                )
-        for j in range(0, Constants.WINDOW_HEIGHT, Constants.CELL_SIZE):
-            pygame.draw.line(
-                self.screen, Constants.BLACK, (0, j), (Constants.WINDOW_WIDTH, j)
-            )
 
     def create_exit(self):
         exit_cell_x = random.randint(
@@ -83,8 +155,9 @@ class Dungeon:
         exit_cell_y = random.randint(0, len(self.cells[0]) - 1)
         self.cells[exit_cell_x][exit_cell_y].terrain = "exit"
         self.cells[exit_cell_x][exit_cell_y].color = Constants.EXIT_COLOR
-        self.cells[exit_cell_x][exit_cell_y].draw(self.screen)
+        self.cells[exit_cell_x][exit_cell_y].draw()
         self.draw_grid()
+        self.exit_coords = (exit_cell_x, exit_cell_y)
 
     def get_empty_spawn_cells(self):
         empty_spawn_cells = []
@@ -98,7 +171,7 @@ class Dungeon:
         agent.x = self.agent_spawn.x
         agent.y = self.agent_spawn.y
         self.agent_spawn.creature = agent
-        self.cells[agent.x][agent.y].draw(self.screen)
+        self.cells[agent.x][agent.y].draw()
         self.draw_grid()
 
     def move_agent(self, agent, direction):
@@ -108,14 +181,18 @@ class Dungeon:
             agent.revert_move()
         self.cells[agent.previous_x][agent.previous_y].creature = None
         self.cells[agent.x][agent.y].creature = agent
-        self.cells[agent.previous_x][agent.previous_y].draw(self.screen)
-        self.cells[agent.x][agent.y].draw(self.screen)
+        self.cells[agent.previous_x][agent.previous_y].draw()
+        self.cells[agent.x][agent.y].draw()
         self.draw_grid()
 
         if self.check_for_exit(agent):
+            self.dungeon_done = True
             return "win"
         else:
-            return "continue"
+            if (agent.x, agent.y) != (agent.previous_x, agent.previous_y):
+                return "continue"
+            else:
+                return "no_move"
 
     def check_for_exit(self, agent):
         if self.cells[agent.x][agent.y].terrain == "exit":
@@ -124,8 +201,15 @@ class Dungeon:
         else:
             return False
 
-    def is_collision(self, agent):
-        if self.cells[agent.x][agent.y].terrain == "rock":
+    def is_collision(self, creature):
+        if (
+            creature.x < 0
+            or creature.x >= len(self.cells)
+            or creature.y < 0
+            or creature.y >= len(self.cells[0])
+        ):
+            return True
+        elif self.cells[creature.x][creature.y].terrain == "rock":
             return True
         else:
             return False
@@ -220,7 +304,7 @@ class Dungeon:
             self.put_in_bounds(rock_x, rock_y, exclude_zone=True)
             self.cells[rock_x][rock_y].terrain = "rock"
             self.cells[rock_x][rock_y].color = Constants.ROCK_COLOR
-            self.cells[rock_x][rock_y].draw(self.screen)
+            self.cells[rock_x][rock_y].draw()
 
         self.draw_grid()
 
@@ -344,4 +428,34 @@ class Dungeon:
         # print("Making brown at: " + str(x) + ", " + str(y))
         self.cells[x][y].brownian_path = True
         self.cells[x][y].color = Constants.BROWN
-        self.cells[x][y].draw(self.screen)
+        self.cells[x][y].draw()
+
+    def draw_grid(self):
+        return
+        safe_zone = False
+        exit_zone = False
+        for i in range(0, Constants.WINDOW_WIDTH, Constants.CELL_SIZE):
+            # Drawing a blue line for the safe zone to show how far it goes out
+            if safe_zone == False and i // Constants.CELL_SIZE >= int(
+                len(self.cells) * Constants.SAFE_ZONE_RATIO
+            ):
+                safe_zone = True
+                pygame.draw.line(
+                    self.screen, Constants.BLUE, (i, 0), (i, Constants.WINDOW_HEIGHT)
+                )
+            # Drawing a red line for the exit zone to show how far it goes out
+            elif exit_zone == False and i // Constants.CELL_SIZE >= int(
+                len(self.cells) * Constants.END_ZONE_RATIO
+            ):
+                exit_zone = True
+                pygame.draw.line(
+                    self.screen, Constants.RED, (i, 0), (i, Constants.WINDOW_HEIGHT)
+                )
+            else:
+                pygame.draw.line(
+                    self.screen, Constants.BLACK, (i, 0), (i, Constants.WINDOW_HEIGHT)
+                )
+        for j in range(0, Constants.WINDOW_HEIGHT, Constants.CELL_SIZE):
+            pygame.draw.line(
+                self.screen, Constants.BLACK, (0, j), (Constants.WINDOW_WIDTH, j)
+            )
