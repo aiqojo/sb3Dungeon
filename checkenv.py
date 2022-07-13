@@ -12,10 +12,11 @@ episodes = 50
 
 
 for episode in range(episodes):
-    observation = env.reset()
+    if episode != 0:
+        observation = env.reset()
     done = False
     while not done:
-        time.sleep(0.05)
+        time.sleep(0.005)
         action = env.action_space.sample()
         env.render()
         observation, reward, done, info = env.step(action)

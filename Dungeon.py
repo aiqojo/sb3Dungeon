@@ -39,18 +39,12 @@ class Dungeon:
     def get_reward(self):
         # If the agent is at the exit it gets 100 points
         if self.cells[self.agent.x][self.agent.y].terrain == "exit":
-            return 100
+            return 500
         elif self.agent.alive == False:
-            return -100
+            return -25
         else:
-            return 25 * (
-                1
-                / (
-                    self.agent.x
-                    + self.exit_coords[0]
-                    + self.agent.y
-                    + self.exit_coords[1]
-                )
+            return 25 / (
+                self.agent.x + self.exit_coords[0] + self.agent.y + self.exit_coords[1]
             )
 
     def build_goblins(self):
@@ -120,10 +114,10 @@ class Dungeon:
                     return_grid[i][j] = 1
                 elif self.cells[i][j].terrain == "exit":
                     return_grid[i][j] = 2
-                if gym_return:
-                    if self.cells[i][j].creature == self.agent:
+                if self.cells[i][j].creature is not None:    
+                    if self.cells[i][j].creature.get_type() == "agent":
                         return_grid[i][j] = 3
-                    elif self.cells[i][j].creature == None:
+                    elif self.cells[i][j].creature.get_type() == "goblin":
                         return_grid[i][j] = 4
 
         return return_grid

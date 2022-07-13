@@ -28,9 +28,13 @@ class sb3DungeonEnv(gym.Env):
         agent_status = self.dungeon.move_agent(self.agent, action)
         if agent_status != "no_move":
             self.dungeon.update()
+        if agent_status == "no_move":
+            self.reward += -1
         self.reward += self.dungeon.get_reward()
+        
+        self.reward += -1
 
-        return self.dungeon.get_state(gym_return=True), self.reward, self.dungeon.done, {}
+        return self.dungeon.get_state(), self.reward, self.dungeon.done, {}
 
     def reset(self):
         agent = Agent.Agent()
@@ -46,4 +50,4 @@ class sb3DungeonEnv(gym.Env):
         return agent, dungeon
 
     def render(self, mode="human"):
-        pass
+        pygame.display.flip()   

@@ -78,3 +78,6 @@ class Agent:
             self.previous_cells[(self.x, self.y)] -= 1
         self.x = self.previous_x
         self.y = self.previous_y
+
+    def get_type(self):
+        return "agent"

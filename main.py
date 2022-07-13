@@ -56,25 +56,25 @@ def loop(dungeon, agent):
 
         if keys[pygame.K_w] and key_held:
             agent_status = dungeon.move_agent(agent, 0)
-            print("Moving up", agent.x, agent.y)
+            #print("Moving up", agent.x, agent.y)
             key_held = True
             loop_time = time.time()
             agent_moved = True
         elif keys[pygame.K_s] and key_held:
             agent_status = dungeon.move_agent(agent, 2)
-            print("Moving down", agent.x, agent.y)
+            #print("Moving down", agent.x, agent.y)
             key_held = True
             loop_time = time.time()
             agent_moved = True
         elif keys[pygame.K_a] and key_held:
             agent_status = dungeon.move_agent(agent, 1)
-            print("Moving left", agent.x, agent.y)
+            #print("Moving left", agent.x, agent.y)
             key_held = True
             loop_time = time.time()
             agent_moved = True
         elif keys[pygame.K_d] and key_held:
             agent_status = dungeon.move_agent(agent, 3)
-            print("Mdoving right", agent.x, agent.y)
+            #print("Mdoving right", agent.x, agent.y)
             key_held = True
             loop_time = time.time()
             agent_moved = True

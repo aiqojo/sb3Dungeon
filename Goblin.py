@@ -36,6 +36,7 @@ class Goblin:
 
     def a_star(self, dungeon, dungeon_cells, agent_x, agent_y):
 
+        # This resets the color of all of the cells that were in the previous path
         if len(self.cur_a_star_path) > 0:
             for cell in self.cur_a_star_path:
                 if dungeon[cell[0]][cell[1]].brownian_path == False:
@@ -59,9 +60,11 @@ class Goblin:
 
         print("F score", f_score[(self.x, self.y)])
 
+        # If the agent is out of range just return
         if f_score[(self.x, self.y)] >= Constants.GOBLIN_RANGE:
             return []
 
+        # This is while the the agent is within range of the goblin
         # Loop until open set is empty
         while len(open_set) > 0:
             # Get node with lowest f_score
@@ -113,6 +116,7 @@ class Goblin:
         path.append(current)
         path.reverse()
 
+
         # Make the path red and draw it
         for cell in path[1:]:
             self.cur_a_star_path.append(cell)
@@ -121,6 +125,7 @@ class Goblin:
 
         # Return the closest tile so it knows where to move
         # path[0] is current tile so we want path[1]
+        print("path", path) 
         return path[1]
 
     def get_manhattan_distance(self, agent_x, agent_y):
@@ -226,3 +231,6 @@ class Goblin:
             self.previous_cells[(self.x, self.y)] -= 1
         self.x = self.previous_x
         self.y = self.previous_y
+
+    def get_type(self):
+        return "goblin"
