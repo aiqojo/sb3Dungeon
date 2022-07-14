@@ -8,7 +8,7 @@ import Goblin
 
 
 class Dungeon:
-    def __init__(self, agent):
+    def __init__(self, agent, screen):
         self.done = False
         self.agent = agent
         # Create the np array used for the cells of the dungeon
@@ -19,11 +19,8 @@ class Dungeon:
         # Initialize pygame to actually use it
         pygame.init()
         # Create screen/window
-        self.screen = pygame.display.set_mode(
-            (Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT)
-        )
+        self.screen = screen
         self.create_window()
-        self.exit_coords = (0, 0)
 
         # Get cell count
         self.cell_count = Constants.CELL_WIDTH * Constants.CELL_HEIGHT
@@ -41,10 +38,10 @@ class Dungeon:
         if self.cells[self.agent.x][self.agent.y].terrain == "exit":
             return 500
         elif self.agent.alive == False:
-            return -25
+            return -500
         else:
             return 25 / (
-                self.agent.x + self.exit_coords[0] + self.agent.y + self.exit_coords[1]
+                1 + abs(self.agent.x - self.exit_coords[0]) + abs(self.agent.y - self.exit_coords[1])
             )
 
     def build_goblins(self):
@@ -58,16 +55,23 @@ class Dungeon:
                 ):
                     self.goblins.append(Goblin.Goblin(cell.x, cell.y))
                     self.cells[cell.x][cell.y].creature = self.goblins[i]
-                    print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
+                    #print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
                     self.cells[cell.x][cell.y].draw()
                     if (cell.x, cell.y) != self.put_in_bounds(cell.x, cell.y):
-                        print("Goblin spawned out of bounds")
+                        #print("Goblin spawned out of bounds")
                         self.goblins.pop()
                     else:
                         break
 
     def update(self):
         for goblin in self.goblins:
+            # Checks if goblin and agent are in the same cell
+            if goblin.x == self.agent.x and goblin.y == self.agent.y:
+                #print("Goblin killed the agent")
+                self.agent.alive = False
+                self.done = True
+                return "lose"
+
             # Only moves goblin if the agent is not in the safe zone or exit zone
             if (self.agent is not None) and (
                 self.agent.x > int(len(self.cells) * Constants.SAFE_ZONE_RATIO)
@@ -81,30 +85,32 @@ class Dungeon:
                     goblin.revert_move()
                 else:
                     if goblin.previous_x != goblin.x or goblin.previous_y != goblin.y:
-                        print(
-                            "Goblin moved",
-                            goblin.x,
-                            goblin.y,
-                            "from",
-                            goblin.previous_x,
-                            goblin.previous_y,
-                        )
+                        #print(
+                        #     "Goblin moved",
+                        #     goblin.x,
+                        #     goblin.y,
+                        #     "from",
+                        #     goblin.previous_x,
+                        #     goblin.previous_y,
+                        # )
                         self.cells[goblin.previous_x][goblin.previous_y].creature = None
                         self.cells[goblin.x][goblin.y].creature = goblin
                         self.cells[goblin.previous_x][goblin.previous_y].draw()
                         self.cells[goblin.x][goblin.y].draw()
                         self.draw_grid()
 
+                    #print(goblin.x, goblin.y, self.agent.x, self.agent.y)
+
                     if goblin.x == self.agent.x and goblin.y == self.agent.y:
-                        print("Goblin killed the agent")
+                        #print("Goblin killed the agent")
                         self.agent.alive = False
-                        self.dungeon_done = True
+                        self.done = True
                         return "lose"
 
     def create_numbered_grid(self, gym_return=False):
         return_grid = np.empty(
             (Constants.CELL_WIDTH, Constants.CELL_HEIGHT),
-            dtype=np.uint32,
+            dtype=np.float32,
         )
         for i in range(Constants.CELL_WIDTH):
             for j in range(Constants.CELL_HEIGHT):
@@ -190,7 +196,7 @@ class Dungeon:
 
     def check_for_exit(self, agent):
         if self.cells[agent.x][agent.y].terrain == "exit":
-            print("You won!")
+            #print("You won!")
             return True
         else:
             return False

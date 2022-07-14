@@ -47,7 +47,8 @@ class Agent:
     def get_cell_history(self):
         for cell in self.previous_cells:
             if self.previous_cells[cell] >= 1:
-                print(cell, self.previous_cells[cell])
+                pass
+                #print(cell, self.previous_cells[cell])
 
     def move(self, direction):
         self.previous_x = self.x

@@ -1,5 +1,5 @@
 import pygame
-import constants
+import Constants
 import random
 
 
@@ -71,8 +71,8 @@ class Agent:
             cell.x // constants.CELL_SIZE,
             cell.y // constants.CELL_SIZE,
         ) in self.previous_cells:
-            print("CELL:", cell.x // constants.CELL_SIZE, cell.y // constants.CELL_SIZE)
-            print("PREVIOUS CELLS:", self.previous_cells)
+            #print("CELL:", cell.x // constants.CELL_SIZE, cell.y // constants.CELL_SIZE)
+            #print("PREVIOUS CELLS:", self.previous_cells)
             # Only returns if agent has been in cell more than once, because the value will be one when the agent has moved into the cell for the first time
             if (
                 self.previous_cells.get(
@@ -84,12 +84,12 @@ class Agent:
                     (cell.x // constants.CELL_SIZE, cell.y // constants.CELL_SIZE)
                 )
         else:
-            print(
-                "CELL ELSE:",
-                cell.x // constants.CELL_SIZE,
-                cell.y // constants.CELL_SIZE,
-            )
-            print("RETUNRNING 0")
+            #print(
+            #    "CELL ELSE:",
+            #    cell.x // constants.CELL_SIZE,
+            #    cell.y // constants.CELL_SIZE,
+            #)
+            #print("RETUNRNING 0")
             return 0
 
     def update_previous_cells(self):
