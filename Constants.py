@@ -1,7 +1,7 @@
 # Sizes
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-CELL_SIZE = 40
+CELL_SIZE = 30
 CELL_WIDTH = WINDOW_WIDTH // CELL_SIZE
 CELL_HEIGHT = WINDOW_HEIGHT // CELL_SIZE
 BROWNIAN_PATH_COUNT = 3
@@ -11,8 +11,8 @@ CLUSTER_COUNT = 100
 CLUSTER_MEAN = int(CELL_COUNT * 0.15)
 CLUSTER_SD = CLUSTER_MEAN // 4
 DELAY = 0.075
-GOBLIN_COUNT = 0
-GOBLIN_RANGE = 5
+GOBLIN_COUNT = 1
+GOBLIN_RANGE = 15
 
 # The exit's y will be randomly chose
 # The exit's x will be randomly be chose in the last % of the dungeon (right side)

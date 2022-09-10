@@ -10,8 +10,8 @@ logdir = "logs"
 env = sb3DungeonEnv()
 env.reset()
 
-models_dir = "models/PPO1"
-models_path = f"{models_dir}/7270000"
+models_dir = "models/PPO4"
+models_path = f"{models_dir}/35000.zip"
 
 model = PPO.load(models_path, env = env)
 
@@ -26,8 +26,8 @@ for ep in range(episodes):
         env.render()
         action, _ = model.predict(obs)
         obs, reward, done, info = env.step(action)
-        print(obs)
-        #print(np.fliplr(np.rot90(m=obs, k=3)))
+        #print(obs)
+        print(np.fliplr(np.rot90(m=obs, k=3)))
         print(reward)
     reward_array += [reward]
 

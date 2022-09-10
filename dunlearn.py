@@ -6,8 +6,8 @@ from sb3DungeonEnv import sb3DungeonEnv
 
 load = False
 
-models_dir = f"models/PPO2"
-logdir = f"logs/PPO2"
+models_dir = f"models/PPO5"
+logdir = f"logs/PPO5"
 
 models_path = f"{models_dir}/8400000.zip"
 
@@ -21,6 +21,7 @@ env = sb3DungeonEnv()
 env.reset()
 
 model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
+# model = PPO.load(models_path, env = env)
 
 TIMESTEPS = 5000
 for i in range(1,100000):

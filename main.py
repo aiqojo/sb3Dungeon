@@ -8,7 +8,10 @@ import time
 def main():
     while True:
         pygame.init()
-        agent, dungeon = reset()
+        screen = pygame.display.set_mode(
+            (Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT)
+        )
+        agent, dungeon = reset(screen)
         print(
             "Rock count:",
             Constants.CLUSTER_COUNT,
@@ -20,13 +23,13 @@ def main():
 
         while True:
             loop(dungeon, agent)
-            agent, dungeon = reset()
+            agent, dungeon = reset(screen)
         # break
 
 
-def reset():
+def reset(screen):
     agent = Agent.Agent()
-    dungeon = Dungeon.Dungeon(agent)
+    dungeon = Dungeon.Dungeon(agent, screen)
     dungeon.create_exit()
     dungeon.add_agent(agent)
 
