@@ -7,6 +7,8 @@ Note: This is me manually controlling the agent
 
 **sb3Dungeon** is an attempt to create a RL agent that can navigate a randomly generated dungeon and reach an exit all whilst avoiding an enemy that can follow it using A*.
 
+Visualization created with pygame.
+
 ## Environment:
 Each tile is represented as an integer on a numpy array. The dungeon size, tile size, and dungeon paths are all parameters that can be easily adjusted to test differing environments.
 Empty tiles, rock tiles, the exit tile, as well as the agent and the enemy each use different integers that update every frame to keep track of their position in order to provide an observation to the RL model.
