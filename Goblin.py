@@ -35,6 +35,8 @@ class Goblin:
             )
 
     def a_star(self, dungeon, dungeon_cells, agent_x, agent_y):
+        # make it so every 50 f score, it waits an extra turn to recalculate
+        # beacuse there probably isnt going to be a difference in path the longer the path is
 
         # This resets the color of all of the cells that were in the previous path
         if len(self.cur_a_star_path) > 0:
