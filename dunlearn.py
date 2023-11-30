@@ -6,8 +6,8 @@ from sb3DungeonEnv import sb3DungeonEnv
 
 load = False
 
-models_dir = f"models/PPO5"
-logdir = f"logs/PPO5"
+models_dir = f"models"
+logdir = f"logs"
 
 models_path = f"{models_dir}/8400000.zip"
 

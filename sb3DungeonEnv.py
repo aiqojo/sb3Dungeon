@@ -14,7 +14,7 @@ class sb3DungeonEnv(gym.Env):
     def __init__(self):
         self.passive_loss = 1
         self.frames = 0
-        self.max_frames = (Constants.CELL_HEIGHT * Constants.CELL_WIDTH) / 2
+        self.max_frames = (Constants.CELL_HEIGHT * Constants.CELL_WIDTH) / 4
 
         pygame.init()
         self.screen = pygame.display.set_mode(
@@ -22,13 +22,14 @@ class sb3DungeonEnv(gym.Env):
         )
 
         self.reward = 0
+        self.pre_dist = np.Inf
         self.done = False
 
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(
             low=0,
             high=255,
-            shape=(Constants.CELL_WIDTH, Constants.CELL_HEIGHT),
+            shape=(Constants.VISION_RANGE * Constants.VISION_RANGE + 3,),
             dtype=np.float32,
         )
         self.agent = Agent.Agent()
@@ -46,7 +47,7 @@ class sb3DungeonEnv(gym.Env):
         self.frames += 1
         if self.frames > self.max_frames:
             self.done = True
-            self.reward += -100
+            self.reward += -10
         agent_status = self.dungeon.move_agent(self.agent, action)
         goblin_status = None
         if agent_status != "no_move":
@@ -56,11 +57,19 @@ class sb3DungeonEnv(gym.Env):
         self.reward += self.dungeon.get_reward()
         if agent_status == "win":
             self.done = True
-            self.reward += 500
+            self.reward += 50
         
-        self.reward += -self.passive_loss
-        if self.frames % 25 == 0:
-            self.passive_loss += 1
+        # self.reward += -self.passive_loss
+        # if self.frames % 25 == 0:
+        #     self.passive_loss += 1
+
+        # if closer than it was previously, reward +1
+        if self.agent.dist < self.pre_dist:
+            self.reward += 1
+        else:
+            self.reward += -1
+        self.pre_dist = self.agent.dist
+
 
         if goblin_status == "lose":
             self.done = True

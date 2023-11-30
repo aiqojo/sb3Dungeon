@@ -31,7 +31,36 @@ class Dungeon:
         self.goblins = []
 
     def get_state(self):
-        return self.create_numbered_grid()
+        grid = self.create_numbered_grid()
+        # print(grid)
+        # returning flattened array of the Constants.VISION_RANGE x Constants.VISION_RANGE grid around the agent,
+        # x, y, and distance to exit
+        # return grid[
+        #     self.agent.x - Constants.VISION_RANGE : self.agent.x + Constants.VISION_RANGE + 1,
+        #     self.agent.y - Constants.VISION_RANGE : self.agent.y + Constants.VISION_RANGE + 1,
+        # ].flatten()
+        cur_x = self.agent.x
+        cur_y = self.agent.y
+        distance_to_exit = abs(self.exit_coords[0] - cur_x) + abs(
+            self.exit_coords[1] - cur_y
+        )
+        return_grid = np.empty(
+            (Constants.VISION_RANGE, Constants.VISION_RANGE),
+            dtype=np.float32,
+        )
+
+        for i in range(Constants.VISION_RANGE):
+            for j in range(Constants.VISION_RANGE):
+                return_grid[i][j] = grid[cur_x - Constants.VISION_RANGE + i][
+                    cur_y - Constants.VISION_RANGE + j
+                ]
+
+        return_grid = return_grid.flatten()
+        return_grid = np.append(return_grid, cur_x)
+        return_grid = np.append(return_grid, cur_y)
+        return_grid = np.append(return_grid, distance_to_exit)
+        return return_grid
+
 
     def get_reward(self):
         # If the agent is at the exit it gets 100 points
@@ -41,7 +70,9 @@ class Dungeon:
             return -500
         else:
             return 25 / (
-                1 + abs(self.agent.x - self.exit_coords[0]) + abs(self.agent.y - self.exit_coords[1])
+                1
+                + abs(self.agent.x - self.exit_coords[0])
+                + abs(self.agent.y - self.exit_coords[1])
             )
 
     def build_goblins(self):
@@ -55,10 +86,10 @@ class Dungeon:
                 ):
                     self.goblins.append(Goblin.Goblin(cell.x, cell.y))
                     self.cells[cell.x][cell.y].creature = self.goblins[i]
-                    #print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
+                    # print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
                     self.cells[cell.x][cell.y].draw()
                     if (cell.x, cell.y) != self.put_in_bounds(cell.x, cell.y):
-                        #print("Goblin spawned out of bounds")
+                        # print("Goblin spawned out of bounds")
                         self.goblins.pop()
                     else:
                         break
@@ -67,7 +98,7 @@ class Dungeon:
         for goblin in self.goblins:
             # Checks if goblin and agent are in the same cell
             if goblin.x == self.agent.x and goblin.y == self.agent.y:
-                #print("Goblin killed the agent")
+                # print("Goblin killed the agent")
                 self.agent.alive = False
                 self.done = True
                 return "lose"
@@ -85,7 +116,7 @@ class Dungeon:
                     goblin.revert_move()
                 else:
                     if goblin.previous_x != goblin.x or goblin.previous_y != goblin.y:
-                        #print(
+                        # print(
                         #     "Goblin moved",
                         #     goblin.x,
                         #     goblin.y,
@@ -99,10 +130,10 @@ class Dungeon:
                         self.cells[goblin.x][goblin.y].draw()
                         self.draw_grid()
 
-                    #print(goblin.x, goblin.y, self.agent.x, self.agent.y)
+                    # print(goblin.x, goblin.y, self.agent.x, self.agent.y)
 
                     if goblin.x == self.agent.x and goblin.y == self.agent.y:
-                        #print("Goblin killed the agent")
+                        # print("Goblin killed the agent")
                         self.agent.alive = False
                         self.done = True
                         return "lose"
@@ -120,7 +151,7 @@ class Dungeon:
                     return_grid[i][j] = 1
                 elif self.cells[i][j].terrain == "exit":
                     return_grid[i][j] = 2
-                if self.cells[i][j].creature is not None:    
+                if self.cells[i][j].creature is not None:
                     if self.cells[i][j].creature.get_type() == "agent":
                         return_grid[i][j] = 3
                     elif self.cells[i][j].creature.get_type() == "goblin":
@@ -185,8 +216,14 @@ class Dungeon:
         self.cells[agent.x][agent.y].draw()
         self.draw_grid()
 
+        # update agent distance frm exit
+        agent.dist = abs(self.exit_coords[0] - agent.x) + abs(
+            self.exit_coords[1] - agent.y
+        )
+
+
         if self.check_for_exit(agent):
-            self.dungeon_done = True
+            self.done = True
             return "win"
         else:
             if (agent.x, agent.y) != (agent.previous_x, agent.previous_y):
@@ -196,7 +233,7 @@ class Dungeon:
 
     def check_for_exit(self, agent):
         if self.cells[agent.x][agent.y].terrain == "exit":
-            #print("You won!")
+            # print("You won!")
             return True
         else:
             return False
@@ -325,7 +362,6 @@ class Dungeon:
         return cell_boundaries
 
     def create_brownian_path(self):
-
         # How far the path will move up or down if value further away than min_border or max_border
         extreme_distance = 2
 

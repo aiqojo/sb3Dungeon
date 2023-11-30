@@ -9,6 +9,7 @@ class Agent:
         self.y = y
         self.previous_x = x
         self.previous_y = y
+        self.dist = 9999999
         self.previous_cells = {}
 
         self.size = size
