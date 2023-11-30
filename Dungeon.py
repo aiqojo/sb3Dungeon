@@ -35,10 +35,7 @@ class Dungeon:
         # print(grid)
         # returning flattened array of the Constants.VISION_RANGE x Constants.VISION_RANGE grid around the agent,
         # x, y, and distance to exit
-        # return grid[
-        #     self.agent.x - Constants.VISION_RANGE : self.agent.x + Constants.VISION_RANGE + 1,
-        #     self.agent.y - Constants.VISION_RANGE : self.agent.y + Constants.VISION_RANGE + 1,
-        # ].flatten()
+
         cur_x = self.agent.x
         cur_y = self.agent.y
         distance_to_exit = abs(self.exit_coords[0] - cur_x) + abs(
@@ -59,6 +56,8 @@ class Dungeon:
         return_grid = np.append(return_grid, cur_x)
         return_grid = np.append(return_grid, cur_y)
         return_grid = np.append(return_grid, distance_to_exit)
+        return_grid = np.append(return_grid, self.exit_coords[0])
+        return_grid = np.append(return_grid, self.exit_coords[1])
         return return_grid
 
 
@@ -151,6 +150,8 @@ class Dungeon:
                     return_grid[i][j] = 1
                 elif self.cells[i][j].terrain == "exit":
                     return_grid[i][j] = 2
+                elif self.cells[i][j].terrain == "path":
+                    return_grid[i][j] = 10
                 if self.cells[i][j].creature is not None:
                     if self.cells[i][j].creature.get_type() == "agent":
                         return_grid[i][j] = 3
@@ -188,6 +189,7 @@ class Dungeon:
         self.cells[exit_cell_x][exit_cell_y].color = Constants.EXIT_COLOR
         self.cells[exit_cell_x][exit_cell_y].draw()
         self.draw_grid()
+        self.exit_loc = (exit_cell_x, exit_cell_y)
         self.exit_coords = (exit_cell_x, exit_cell_y)
 
     def get_empty_spawn_cells(self):

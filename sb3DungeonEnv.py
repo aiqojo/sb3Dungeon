@@ -14,7 +14,7 @@ class sb3DungeonEnv(gym.Env):
     def __init__(self):
         self.passive_loss = 1
         self.frames = 0
-        self.max_frames = (Constants.CELL_HEIGHT * Constants.CELL_WIDTH) / 4
+        self.max_frames = (Constants.CELL_HEIGHT * Constants.CELL_WIDTH) / 2
 
         pygame.init()
         self.screen = pygame.display.set_mode(
@@ -22,14 +22,14 @@ class sb3DungeonEnv(gym.Env):
         )
 
         self.reward = 0
-        self.pre_dist = np.Inf
+        self.prev_dist = np.Inf
         self.done = False
 
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(
             low=0,
             high=255,
-            shape=(Constants.VISION_RANGE * Constants.VISION_RANGE + 3,),
+            shape=(Constants.VISION_RANGE * Constants.VISION_RANGE + 5,),
             dtype=np.float32,
         )
         self.agent = Agent.Agent()
@@ -44,31 +44,41 @@ class sb3DungeonEnv(gym.Env):
         #pygame.display.flip()
 
     def step(self, action):
+        self.reward = 0
         self.frames += 1
         if self.frames > self.max_frames:
             self.done = True
-            self.reward += -10
+            
         agent_status = self.dungeon.move_agent(self.agent, action)
         goblin_status = None
         if agent_status != "no_move":
             goblin_status = self.dungeon.update()
         if agent_status == "no_move":
-            self.reward += -10
-        self.reward += self.dungeon.get_reward()
+            # self.reward += -100
+            self.reward += 0
+        # self.reward += self.dungeon.get_reward()
         if agent_status == "win":
             self.done = True
-            self.reward += 50
+            self.reward += 100
         
         # self.reward += -self.passive_loss
         # if self.frames % 25 == 0:
         #     self.passive_loss += 1
 
         # if closer than it was previously, reward +1
-        if self.agent.dist < self.pre_dist:
-            self.reward += 1
+        # print(self.agent.dist, self.pre_dist)
+
+        dist_to_exit = np.sqrt(
+                (self.agent.x - self.dungeon.exit_loc[0]) ** 2
+                + (self.agent.y - self.dungeon.exit_loc[1]) ** 2
+            )
+        max_dist = Constants.CELL_WIDTH
+
+        if self.agent.dist < self.prev_dist:
+            self.reward += 10 * (self.agent.dist / max_dist)
         else:
-            self.reward += -1
-        self.pre_dist = self.agent.dist
+            self.reward += -10 * (self.agent.dist / max_dist)
+        self.prev_dist = self.agent.dist
 
 
         if goblin_status == "lose":

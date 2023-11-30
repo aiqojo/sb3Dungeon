@@ -14,7 +14,7 @@ DELAY = 0.075
 GOBLIN_COUNT = 0
 GOBLIN_RANGE = 10
 
-VISION_RANGE = 5
+VISION_RANGE = CELL_HEIGHT // 2
 
 # The exit's y will be randomly chose
 # The exit's x will be randomly be chose in the last % of the dungeon (right side)
