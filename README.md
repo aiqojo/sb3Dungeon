@@ -5,11 +5,12 @@ Note: This is me manually controlling the agent
 
 ---
 
-**sb3Dungeon** is an attempt to create a RL agent that can navigate a randomly generated dungeon and reach an exit all whilst avoiding an enemy that can follow it using A*.
+**sb3Dungeon** is an attempt to create a RL agent that can navigate a randomly generated dungeon and reach an exit all whilst avoiding an enemy that can follow it using A\*.
 
 Visualization created with pygame.
 
 ## Environment:
+
 Each tile is represented as an integer on a numpy array. The dungeon size, tile size, and dungeon paths are all parameters that can be easily adjusted to test differing environments.
 Empty tiles, rock tiles, the exit tile, as well as the agent and the enemy each use different integers that update every frame to keep track of their position in order to provide an observation to the RL model.
 
@@ -20,14 +21,14 @@ First, the paths are created using [brownian motion](https://en.wikipedia.org/wi
 Something to note is that the enemy does not move when the agent is either in the spawn area, or the exit area, denoted by the empty areas to either side of the environment. This can allow the agent to perform some more complicated maneuvers in order to dodge the enemy.
 
 ## Agent:
+
 The agent is the yellow tile. It has the choice to move in one of the cardinal directions each frame, no diagonals. If it attempts to move into a tile such as a rock, it's reward will go down, but the environment won't progress, meaning it can attempt to choose again.
 
 ## Reward Function:
+
 This is still a work in progress. The idea is to have the agent want to move to the exit as quick as possible while avoiding the enemy. As of now, the agent starts with a reward of 0, and it slowly decreases as time goes on. Upon having an environment reset either due to reaching the max number of frames, or having the enemy reach it, the agent's reward increases by how close it was to the exit.
 This reward function is still rudimentary though, and doesnt perform as well as it could.
 
 ## Interesting Notes:
+
 Theoretically, this should be solvable almost 100% of the time if the agent learns to use the start zone to bait the enemy into a far away position and then slipping by it. Since the enemy can only move as fast as the agent, if the agent is at least one tile ahead of the enemy it should be able to make it to the exit 100% of the time.
-
-
-

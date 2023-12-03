@@ -1,5 +1,5 @@
 /sb3Dungeon
-/models
-/logs
+/models*
+/logs*
 /__pycache__
 /.vscode

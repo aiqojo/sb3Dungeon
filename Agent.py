@@ -9,7 +9,7 @@ class Agent:
         self.y = y
         self.previous_x = x
         self.previous_y = y
-        self.dist = 9999999
+        self.dist = Constants.CELL_WIDTH
         self.previous_cells = {}
 
         self.size = size
@@ -49,7 +49,7 @@ class Agent:
         for cell in self.previous_cells:
             if self.previous_cells[cell] >= 1:
                 pass
-                #print(cell, self.previous_cells[cell])
+                # print(cell, self.previous_cells[cell])
 
     def move(self, direction):
         self.previous_x = self.x

@@ -58,40 +58,16 @@ class Dungeon:
         return_grid = np.append(return_grid, distance_to_exit)
         return_grid = np.append(return_grid, self.exit_coords[0])
         return_grid = np.append(return_grid, self.exit_coords[1])
-        return return_grid
-
-
-    def get_reward(self):
-        # If the agent is at the exit it gets 100 points
-        if self.cells[self.agent.x][self.agent.y].terrain == "exit":
-            return 500
-        elif self.agent.alive == False:
-            return -500
-        else:
-            return 25 / (
-                1
-                + abs(self.agent.x - self.exit_coords[0])
-                + abs(self.agent.y - self.exit_coords[1])
+        # returning back to the agent the largest number of times it has been in a cell
+        try:
+            return_grid = np.append(
+                return_grid, max(self.agent.previous_cells.values())
             )
+            # print the location of the max value in previpous cells
+        except:
+            return_grid = np.append(return_grid, 0)
 
-    def build_goblins(self):
-        for i in range(Constants.GOBLIN_COUNT):
-            while True:
-                cell = np.random.choice(self.cells.flatten())
-                if (
-                    cell.terrain == "empty"
-                    and cell.creature is None
-                    and cell.brownian_path is True
-                ):
-                    self.goblins.append(Goblin.Goblin(cell.x, cell.y))
-                    self.cells[cell.x][cell.y].creature = self.goblins[i]
-                    # print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
-                    self.cells[cell.x][cell.y].draw()
-                    if (cell.x, cell.y) != self.put_in_bounds(cell.x, cell.y):
-                        # print("Goblin spawned out of bounds")
-                        self.goblins.pop()
-                    else:
-                        break
+        return return_grid
 
     def update(self):
         for goblin in self.goblins:
@@ -160,19 +136,6 @@ class Dungeon:
 
         return return_grid
 
-    def move_goblins(self):
-        dungeon_cells = self.create_numbered_grid()
-        for goblin in self.goblins:
-            goblin.move(self.cells, dungeon_cells, self.agent.x, self.agent.y)
-            goblin.x, goblin.y = self.put_in_bounds(goblin.x, goblin.y)
-            if self.is_collision(goblin):
-                goblin.revert_move()
-            self.cells[goblin.previous_x][goblin.previous_y].creature = None
-            self.cells[goblin.x][goblin.y].creature = goblin
-            self.cells[goblin.previous_x][goblin.previous_y].draw()
-            self.cells[goblin.x][goblin.y].draw()
-            self.draw_grid()
-
     def create_window(self):
         for i in range(Constants.WINDOW_WIDTH // Constants.CELL_SIZE):
             for j in range(Constants.WINDOW_HEIGHT // Constants.CELL_SIZE):
@@ -209,6 +172,7 @@ class Dungeon:
 
     def move_agent(self, agent, direction):
         agent.move(direction)
+        # agent.update_previous_cells()
         agent.x, agent.y = self.put_in_bounds(agent.x, agent.y)
         if self.is_collision(agent):
             agent.revert_move()
@@ -222,7 +186,6 @@ class Dungeon:
         agent.dist = abs(self.exit_coords[0] - agent.x) + abs(
             self.exit_coords[1] - agent.y
         )
-
 
         if self.check_for_exit(agent):
             self.done = True
@@ -497,3 +460,35 @@ class Dungeon:
             pygame.draw.line(
                 self.screen, Constants.BLACK, (0, j), (Constants.WINDOW_WIDTH, j)
             )
+
+    def build_goblins(self):
+        for i in range(Constants.GOBLIN_COUNT):
+            while True:
+                cell = np.random.choice(self.cells.flatten())
+                if (
+                    cell.terrain == "empty"
+                    and cell.creature is None
+                    and cell.brownian_path is True
+                ):
+                    self.goblins.append(Goblin.Goblin(cell.x, cell.y))
+                    self.cells[cell.x][cell.y].creature = self.goblins[i]
+                    # print("Goblin spawned at: " + str(cell.x) + ", " + str(cell.y))
+                    self.cells[cell.x][cell.y].draw()
+                    if (cell.x, cell.y) != self.put_in_bounds(cell.x, cell.y):
+                        # print("Goblin spawned out of bounds")
+                        self.goblins.pop()
+                    else:
+                        break
+
+    def move_goblins(self):
+        dungeon_cells = self.create_numbered_grid()
+        for goblin in self.goblins:
+            goblin.move(self.cells, dungeon_cells, self.agent.x, self.agent.y)
+            goblin.x, goblin.y = self.put_in_bounds(goblin.x, goblin.y)
+            if self.is_collision(goblin):
+                goblin.revert_move()
+            self.cells[goblin.previous_x][goblin.previous_y].creature = None
+            self.cells[goblin.x][goblin.y].creature = goblin
+            self.cells[goblin.previous_x][goblin.previous_y].draw()
+            self.cells[goblin.x][goblin.y].draw()
+            self.draw_grid()

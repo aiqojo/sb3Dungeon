@@ -1,8 +1,8 @@
-import gym
 from stable_baselines3 import PPO, DQN
 from sb3DungeonEnv import sb3DungeonEnv
+import sys
 import time
-import numpy as np
+import os
 
 logdir = "logs"
 
@@ -10,25 +10,43 @@ logdir = "logs"
 env = sb3DungeonEnv()
 env.reset()
 
-models_dir = "models/"
-models_path = f"{models_dir}/50000.zip"
+# models_dir = "models4/"
+# models_dir = "models6-small_backtrack/"
+# models_dir = "models10-big/"
+models_dir = "models11-big/"
+load_last = True
+models_path = ""
 
-model = PPO.load(models_path, env = env)
+if load_last:
+    # finding the largest model
+    largest = 0
+    for file in os.listdir(models_dir):
+        filename = os.fsdecode(file)
+        num = int(filename.split(".")[0])
+        if num > largest:
+            largest = num
+    models_path = f"{models_dir}/{largest}.zip"
+    print("Loading model: ", models_path)
+else:
+    models_path = f"{models_dir}/2075000.zip"
+    print("Loading model: ", models_path)
+
+model = PPO.load(models_path, env=env)
 
 reward_array = []
 
 episodes = 100
 for ep in range(episodes):
-    obs = env.reset()
+    obs, _ = env.reset()
     done = False
     while not done:
-        # time.sleep(.5)
+        time.sleep(0.0025)
         env.render()
         action, _ = model.predict(obs)
-        obs, reward, done, info = env.step(action)
-        #print(obs)
+        obs, reward, done, _, info = env.step(action)
         # print(np.fliplr(np.rot90(m=obs, k=3)))
-        print(reward)
+        if reward != 0:
+            print(reward)
     reward_array += [reward]
 
 env.close()
