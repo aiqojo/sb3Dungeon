@@ -180,6 +180,7 @@ class Dungeon:
         self.cells[agent.x][agent.y].creature = agent
         self.cells[agent.previous_x][agent.previous_y].draw()
         self.cells[agent.x][agent.y].draw()
+        pygame.event.pump()  # this somehow fixes the freezing lol
         self.draw_grid()
 
         # update agent distance frm exit

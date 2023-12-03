@@ -13,7 +13,7 @@ env.reset()
 # models_dir = "models4/"
 # models_dir = "models6-small_backtrack/"
 # models_dir = "models10-big/"
-models_dir = "models11-big/"
+models_dir = "models12-big/"
 load_last = True
 models_path = ""
 
@@ -40,7 +40,7 @@ for ep in range(episodes):
     obs, _ = env.reset()
     done = False
     while not done:
-        time.sleep(0.0025)
+        time.sleep(0.001)
         env.render()
         action, _ = model.predict(obs)
         obs, reward, done, _, info = env.step(action)
