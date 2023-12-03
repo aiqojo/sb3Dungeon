@@ -6,8 +6,9 @@ mod = None
 
 try:
     dir_name = sys.argv[1] + "/"
-    mod = sys.argv[2]
-    print(dir_name, mod)
+    mod = int(sys.argv[2])
+    print("Dir: \t", os.getcwd() + "/" + dir_name)
+    print("Mod: \t", mod)
 
     for file in os.listdir(dir_name):
         filename = os.fsdecode(file)
@@ -24,3 +25,5 @@ except:
         print("Example usage: clean_models.py \t models1 \t 1000000")
         print("Example usage: \t\t\t dir_name \t value to mod by ")
         print("MISSING INPUT---------------------------------------------------")
+    else:
+        print("somthin else went wrong")
