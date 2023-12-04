@@ -4,12 +4,12 @@ import sys
 dir_name = None
 mod = None
 
-try:
-    dir_name = sys.argv[1] + "/"
+dir_name = sys.argv[1] + "/"
     mod = int(sys.argv[2])
     print("Dir: \t", os.getcwd() + "/" + dir_name)
     print("Mod: \t", mod)
 
+try:
     for file in os.listdir(dir_name):
         filename = os.fsdecode(file)
         num = int(filename.split(".")[0])
@@ -26,4 +26,4 @@ except:
         print("Example usage: \t\t\t dir_name \t value to mod by ")
         print("MISSING INPUT---------------------------------------------------")
     else:
-        print("somthin else went wrong")
+        print("prob wrong folder name")

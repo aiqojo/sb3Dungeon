@@ -18,7 +18,8 @@ class sb3DungeonEnv(gym.Env):
         # Constants.CELL_WIDTH * 4
         if Constants.WINDOW_WIDTH == 1280:
             # this is how it shold be from now on
-            self.max_frames = (Constants.CELL_WIDTH) * 8
+            # self.max_frames = (Constants.CELL_WIDTH) * 8  # model <= 14
+            self.max_frames = (Constants.CELL_WIDTH) * 16  # model 15
         else:
             # this stays cause legacy form older models
             self.max_frames = (Constants.CELL_HEIGHT * Constants.CELL_WIDTH) / 2
@@ -36,7 +37,7 @@ class sb3DungeonEnv(gym.Env):
             low=0,
             high=255,
             # +1 for max location for backtracking
-            # shape=(Constants.VISION_RANGE * Constants.VISION_RANGE + 5,),
+            # shape=(Constants.VISION_RANGE * Constants.VISION_RANGE + 5,),  # model 6
             shape=(Constants.VISION_RANGE * Constants.VISION_RANGE + 6,),
             dtype=np.float32,
         )
@@ -56,21 +57,48 @@ class sb3DungeonEnv(gym.Env):
         self.frames += 1
         if self.frames > self.max_frames:
             self.done = True
+
             # reward for how close the agent is to the exit
             # for models 4-9
             # self.reward += -100 * (self.agent.dist / Constants.CELL_WIDTH) + 1
             # for models 10+
-            self.reward += -200 * (self.agent.dist / Constants.CELL_WIDTH) + 1
+            dist_reward = -200 * (self.agent.dist / Constants.CELL_WIDTH) + 1
+            self.reward += dist_reward
 
             # reward for time spent in the dungeon
-            self.reward += -100 * (self.frames / self.max_frames) + 1
+            time_reward = -100 * (self.frames / self.max_frames) + 1
+            self.reward += time_reward
 
             # negative reward for the largest number of times the agent has been in the same cell
-            self.reward += -1 * (max(self.agent.previous_cells.values()))
+            # stuck_reward = -1 * (max(self.agent.previous_cells.values())) # for models < 13
+            stuck_reward = (
+                -200 * (max(self.agent.previous_cells.values()) / self.max_frames) + 1
+            )  # for models 13+
+            self.reward += stuck_reward
 
-            # adding the min value possible to try and make sure the reward is above 0
-            # self.reward += 200 # for models 4-9
-            self.reward += 300  # for models 10+
+            # to keep it mostly positive
+            # self.reward += 300  # for models 10-12
+            self.reward += 500  # for models 13+
+
+            # print(
+            #     "\ndist reward: \t\t",
+            #     "{:010.4f}".format(dist_reward),
+            # )
+            # print(
+            #     "time reward: \t\t",
+            #     "{:010.4f}".format(time_reward),
+            # )
+            # print(
+            #     "previous cells reward: \t",
+            #     "{:010.4f}".format(stuck_reward),
+            # )
+            # if self.reward >= 0:
+            #     print("total reward: \t\t", " {:09.4f}".format(round(self.reward, 4)))
+            # else:
+            #     print(
+            #         "total reward: \t\t",
+            #         "{:010.4f}".format(round(self.reward, 4)),
+            #     )
 
         # add the current x and y to the agent's previous cells
         if (self.agent.x, self.agent.y) not in self.agent.previous_cells:
@@ -86,7 +114,42 @@ class sb3DungeonEnv(gym.Env):
             self.reward += 0
         if agent_status == "win":
             self.done = True
-            self.reward += 1000
+            win_reward = 1000
+            self.reward += win_reward
+
+            # below rewards for model 13+
+            # reward for time spent in the dungeon
+            time_reward = -100 * (self.frames / self.max_frames) + 1
+            self.reward += time_reward
+
+            # negative reward for the largest number of times the agent has been in the same cell
+            stuck_reward = (
+                -200 * (max(self.agent.previous_cells.values()) / self.max_frames) + 1
+            )  # for models 13+
+            self.reward += stuck_reward
+
+            # to keep it mostly positive
+            self.reward += 300  # for models 13+
+
+            # print(
+            #     "\ntime reward: \t\t",
+            #     "{:010.4f}".format(time_reward),
+            # )
+            # print(
+            #     "previous cells reward: \t",
+            #     "{:010.4f}".format(stuck_reward),
+            # )
+            # print(
+            #     "win reward: \t\t",
+            #     " {:09.4f}".format(win_reward),
+            # )
+            # if self.reward >= 0:
+            #     print("total reward: \t\t", " {:09.4f}".format(round(self.reward, 4)))
+            # else:
+            #     print(
+            #         "total reward: \t\t",
+            #         "{:010.4f}".format(round(self.reward, 4)),
+            #     )
 
         # if goblin_status == "lose":
         #     self.done = True
