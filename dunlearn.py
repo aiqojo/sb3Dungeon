@@ -4,8 +4,8 @@ import os
 import time
 from sb3DungeonEnv import sb3DungeonEnv
 
-models_dir = f"models15-big"
-logdir = f"logs15-big"
+models_dir = f"models16-big"
+logdir = f"logs16-big"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
