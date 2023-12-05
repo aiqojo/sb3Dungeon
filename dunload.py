@@ -13,9 +13,10 @@ env.reset()
 # models_dir = "models4/"
 # models_dir = "models6-small_backtrack/"
 # models_dir = "models11-big/"
-# models_dir = "models12-big/"
+models_dir = "models12-big/"
 # models_dir = "models13-big/"
-models_dir = "models15-big/"
+# models_dir = "models15-big/"
+# models_dir = "models16-big/"
 load_last = True
 models_path = ""
 

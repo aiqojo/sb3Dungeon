@@ -122,14 +122,8 @@ class sb3DungeonEnv(gym.Env):
             time_reward = -100 * (self.frames / self.max_frames) + 1
             self.reward += time_reward
 
-            # negative reward for the largest number of times the agent has been in the same cell
-            stuck_reward = (
-                -200 * (max(self.agent.previous_cells.values()) / self.max_frames) + 1
-            )  # for models 13+
-            self.reward += stuck_reward
-
             # to keep it mostly positive
-            self.reward += 300  # for models 13+
+            self.reward += 100  # for models 13+
 
             # print(
             #     "\ntime reward: \t\t",
